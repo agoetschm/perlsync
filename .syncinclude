@@ -1,4 +1,6 @@
 heads/
+# a comment
 /test*
+
 *.txt
 ^/ab

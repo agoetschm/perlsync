@@ -17,6 +17,9 @@ my @ignore_regexps;
 
 while (my $row = <$fh>) {
   chomp $row;
+  # filter blanks or comments
+  next if ($row =~ /^\s*$/ or substr($row, 0, 1) eq '#');
+
   if (substr($row, 0, 1) eq '^') {
     push @ignore_regexps, convert_pattern_to_regex( substr $row, 1 );
   } else {
