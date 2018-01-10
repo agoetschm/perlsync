@@ -1,77 +1,102 @@
 use strict;
 use warnings;
 use feature qw( say );
-use File::Copy qw(copy);
+use File::Copy;
+use File::Path;
+use File::Basename;
 use File::stat;
-use Time::localtime;
 use File::Find;
+use Time::localtime;
 
-my $filename = '.syncinclude';
-open(my $fh, '<', $filename)
-  or die "Could not open file '$filename' $!";
+my $syncinclude_file = '.syncinclude';
+open(my $fh, '<', $syncinclude_file)
+  or die "Could not open file '$syncinclude_file' $!";
 
-my @patterns;
+my @regexps;
+my @ignore_regexps;
 
 while (my $row = <$fh>) {
   chomp $row;
-  push @patterns, $row;
+  if (substr($row, 0, 1) eq '^') {
+    push @ignore_regexps, convert_pattern_to_regex( substr $row, 1 );
+  } else {
+    push @regexps, convert_pattern_to_regex($row);
+  }
 }
 
+sub convert_pattern_to_regex {
+  my $pattern = shift;
+  my $regex;
 
-# copy("text.txt", "text-copy.txt");
+  # handle leading /
+  if (substr($pattern, 0, 1) eq "/") {
+    $regex = "\\A\.\/";
+    $pattern = substr $pattern, 1;
+  } else {
+    $regex = "\/";
+  }
+  # loop over the rest
+  foreach my $char (split '', $pattern) {
+    if ($char =~ /[\w.]/) {
+      $regex .= $char;
+    } elsif ($char eq '/') {
+      $regex .= "\/";
+    } elsif ($char eq '*'){
+      # TODO may not be safe
+      $regex .= "[\\w.]*?";
+    } else {
+      die "Unknown character '$char' in pattern $pattern";
+    }
+  }
+  # handle absence of trailing /
+  if (substr($pattern, -1) ne '/'){
+    $regex .= "(\/|\\z)";
+  }
+
+  return qr/$regex/;
+}
+
+sub test_filename {
+  my $filename = shift;
+  # say "test " . $filename;
+
+  # if to be ignored
+  foreach my $regex (@ignore_regexps){
+    return 0 if $filename =~ $regex;
+  }
+  # if to be included
+  foreach my $regex (@regexps){
+    return 1 if $filename =~ $regex;
+  }
+  return 0;
+}
 
 # my $timestamp = ctime(stat($fh)->mtime);
 # say stat($fh)->mtime;
 
-# = ("heads/", "/test*", "*.txt", "a*");
 
 my @content;
 sub wanted {
   return if -d; # skip directories
   my $name = $File::Find::name;
 
-  foreach (@patterns){
-    my $pattern = $_; # avoid aliasing
-    my $regex;
-
-    ### tranform pattern into regex ###
-
-    # handle leading /
-    if (substr($pattern, 0, 1) eq "/") {
-      $regex = "\\A\.\/";
-      $pattern = substr $pattern, 1;
-    } else {
-      $regex = "\/";
-    }
-    # loop over the rest
-    foreach my $char (split '', $pattern) {
-      if ($char =~ /[\w.]/) {
-        $regex .= $char;
-      } elsif ($char eq '/') {
-        $regex .= "\/";
-      } elsif ($char eq '*'){
-        # TODO may not be safe
-        $regex .= "[\\w.]*?";
-      } else {
-        die "Unknown character $char in pattern $pattern"
-      }
-    }
-    # handle absence of trailing /
-    if (substr($pattern, -1) ne '/'){
-      $regex .= "(\/|\\z)";
-    }
-
-    #$regex = qr/\A\.\/t[\w.]*?(\/|\z)/;
-
-    # perform filtering
-    if ($name =~ /$regex/) {
-      push @content, $name;
-      last;
-    }
+  if (test_filename $name) {
+    push @content, $name;
   }
 }
+
+
 find( \&wanted, '.');
+
 for my $f (@content) {
   say $f;
-  copy $f, "saved/" . $f or die "copy of $f failed";
+  my $dest = "saved/" . dirname($f);
+
+  # if (! -d $dest){
+  #   say "create $dest";
+  #   my $dirs = eval { mkpath($dest) };
+  #   die "Failed to create $dest: $@\n" unless $dirs;
+  # }
+  #
+  # copy $f, $dest or die "Failed to copy $f";
 }

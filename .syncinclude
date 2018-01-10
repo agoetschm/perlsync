@@ -1,5 +1,4 @@
 heads/
 /test*
 *.txt
-a*
-license
+^/ab
