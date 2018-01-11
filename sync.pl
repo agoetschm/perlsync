@@ -27,6 +27,8 @@ while (my $row = <$fh>) {
   }
 }
 
+close $fh;
+
 sub convert_pattern_to_regex {
   my $pattern = shift;
   my $regex;
@@ -74,6 +76,7 @@ sub test_filename {
   return 0;
 }
 
+
 # my $timestamp = ctime(stat($fh)->mtime);
 # say stat($fh)->mtime;
 
@@ -91,15 +94,21 @@ sub wanted {
 
 find( \&wanted, '.');
 
-for my $f (@content) {
-  say $f;
-  my $dest = "saved/" . dirname($f);
+for my $fname (@content) {
+  say $fname;
+  my $dest = "saved/" . $fname;
+  my $destdir = dirname($dest);
 
-  # if (! -d $dest){
-  #   say "create $dest";
-  #   my $dirs = eval { mkpath($dest) };
-  #   die "Failed to create $dest: $@\n" unless $dirs;
-  # }
-  #
-  # copy $f, $dest or die "Failed to copy $f";
+  # create dest dir if necessary
+  if (! -d $destdir){
+    say "create $destdir";
+    my $dirs = eval { mkpath($destdir) };
+    die "Failed to create $destdir: $@\n" unless $dirs;
+  }
+
+  # skip if not modified
+  next if -e $dest and stat($dest)->mtime >= stat($fname)->mtime;
+
+  say "copy";
+  copy $fname, $destdir or die "Failed to copy $fname";
 }

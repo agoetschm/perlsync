@@ -4,3 +4,4 @@ heads/
 
 *.txt
 ^/ab
+^/saved
