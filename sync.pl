@@ -9,11 +9,17 @@ use File::Find;
 use Time::localtime;
 
 use lib ".";
-use utils qw( convert_pattern_to_regex );
+use utils qw( convert_pattern_to_regex display_notification );
+
+sub error {
+  my $msg = shift;
+  display_notification $msg;
+  die $msg;
+}
 
 my $syncinclude_file = '.syncinclude';
 open(my $fh, '<', $syncinclude_file)
-  or die "Could not open file '$syncinclude_file' $!";
+  or error "Could not open file '$syncinclude_file' $!" ;
 
 my @regexps;
 my @ignore_regexps;
@@ -63,20 +69,22 @@ sub wanted {
 find( \&wanted, '.');
 
 for my $fname (@content) {
-  say $fname;
+  # say $fname;
   my $dest = "saved/" . $fname;
   my $destdir = dirname($dest);
 
   # create dest dir if necessary
   if (! -d $destdir){
-    say "create $destdir";
+    # say "create $destdir";
     my $dirs = eval { mkpath($destdir) };
-    die "Failed to create $destdir: $@\n" unless $dirs;
+    error "Failed to create $destdir: $@\n" unless $dirs;
   }
 
   # skip if not modified
   next if -e $dest and stat($dest)->mtime >= stat($fname)->mtime;
 
-  say "copy";
-  copy $fname, $destdir or die "Failed to copy $fname";
+  # say "copy";
+  copy $fname, $destdir or error "Failed to copy $fname";
 }
+
+display_notification "Backup complete"
