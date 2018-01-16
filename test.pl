@@ -1,14 +1,7 @@
-use Desktop::Notify;
+use Net::SFTP::Foreign;
+use feature qw(say);
 
-# Open a connection to the notification daemon
-my $notify = Desktop::Notify->new();
+my $sftp = Net::SFTP::Foreign->new(host => "192.168.1.158", user => "pi");
 
-# Create a notification to display
-my $notification = $notify->create(summary => 'Perlsync',
-                                  body => 'Hello, world!',
-                                  timeout => -1);
-
-# Display the notification
-$notification->show();
-
-# $notification->close();
+# $sftp->put("LICENSE", "test.txt");
+say $sftp->stat("test.txt")->mtime

@@ -1,12 +1,14 @@
 use strict;
 use warnings;
 use feature qw( say );
+
 use File::Copy;
 use File::Path;
 use File::Basename;
 use File::stat;
 use File::Find;
 use Time::localtime;
+use Net::SFTP::Foreign;
 
 use lib ".";
 use utils qw( convert_pattern_to_regex display_notification );
@@ -68,23 +70,30 @@ sub wanted {
 
 find( \&wanted, '.');
 
+my $host = "192.168.1.158";
+my $user = "pi";
+my $sftp = Net::SFTP::Foreign->new(host => $host, user => $user)
+            or error "Failed to connect to host";
+
 for my $fname (@content) {
   # say $fname;
   my $dest = "saved/" . $fname;
   my $destdir = dirname($dest);
 
   # create dest dir if necessary
-  if (! -d $destdir){
-    # say "create $destdir";
-    my $dirs = eval { mkpath($destdir) };
-    error "Failed to create $destdir: $@\n" unless $dirs;
-  }
+  # if (! -d $destdir){
+  #   # say "create $destdir";
+  #   my $dirs = eval { mkpath($destdir) };
+  #   error "Failed to create $destdir: $@\n" unless $dirs;
+  # }
 
   # skip if not modified
-  next if -e $dest and stat($dest)->mtime >= stat($fname)->mtime;
+  # next if -e $dest and stat($dest)->mtime >= stat($fname)->mtime;
+  my $dest_stat;
+  next if $dest_stat = $sftp->stat($dest) and $dest_stat->mtime >= stat($fname)->mtime;
 
-  # say "copy";
-  copy $fname, $destdir or error "Failed to copy $fname";
+  say "copy $fname";
+  $sftp->put($fname, $dest) or error "Failed to copy $fname to $host";
 }
 
 display_notification "Backup complete"
