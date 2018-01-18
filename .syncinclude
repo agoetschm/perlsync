@@ -1,7 +1,2 @@
-heads/
-# a comment
-/test*
-
-*.txt
-^/ab
-^/saved
+/cv/
+#/test*

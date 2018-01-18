@@ -1,3 +1,5 @@
+#! /usr/bin/perl
+
 use strict;
 use warnings;
 use feature qw( say );
@@ -10,8 +12,16 @@ use File::Find;
 use Time::localtime;
 use Net::SFTP::Foreign;
 
+# TODO remove
+$| = 1; # autoflush
+
 use lib ".";
 use utils qw( convert_pattern_to_regex display_notification );
+
+my $host = "192.168.1.158";
+my $user = "pi";
+my $src = "/home/agoetschm/Documents";
+my $backup_dir = "backup";
 
 sub error {
   my $msg = shift;
@@ -40,10 +50,8 @@ while (my $row = <$fh>) {
 
 close $fh;
 
-
 sub test_filename {
   my $filename = shift;
-  # say "test " . $filename;
 
   # if to be ignored
   foreach my $regex (@ignore_regexps){
@@ -61,39 +69,32 @@ my @content;
 sub wanted {
   return if -d; # skip directories
   my $name = $File::Find::name;
+  my $rel_name = File::Spec->abs2rel($name, $src);
 
-  if (test_filename $name) {
-    push @content, $name;
+  if (test_filename $rel_name) {
+    push @content, $rel_name;
   }
 }
 
+find( \&wanted, $src);
+say "Found " . scalar @content . " files to backup";
 
-find( \&wanted, '.');
-
-my $host = "192.168.1.158";
-my $user = "pi";
 my $sftp = Net::SFTP::Foreign->new(host => $host, user => $user)
-            or error "Failed to connect to host";
+            or error "Failed to connect to $host";
+say "Connected to $host";
 
 for my $fname (@content) {
-  # say $fname;
-  my $dest = "saved/" . $fname;
+  say "considering $fname...";
+  my $file_full_path = File::Spec->rel2abs($fname, $src);
+  my $dest = $backup_dir . "/" . $fname;
   my $destdir = dirname($dest);
 
-  # create dest dir if necessary
-  # if (! -d $destdir){
-  #   # say "create $destdir";
-  #   my $dirs = eval { mkpath($destdir) };
-  #   error "Failed to create $destdir: $@\n" unless $dirs;
-  # }
-
   # skip if not modified
-  # next if -e $dest and stat($dest)->mtime >= stat($fname)->mtime;
   my $dest_stat;
-  next if $dest_stat = $sftp->stat($dest) and $dest_stat->mtime >= stat($fname)->mtime;
+  next if $dest_stat = $sftp->stat($dest) and $dest_stat->mtime >= stat($file_full_path)->mtime;
 
-  say "copy $fname";
-  $sftp->put($fname, $dest) or error "Failed to copy $fname to $host";
+  say "copy $file_full_path to $host/$dest";
+  $sftp->put($file_full_path, $dest) or error "Failed to copy $file_full_path to $host: " .$sftp->error;
 }
 
 display_notification "Backup complete"

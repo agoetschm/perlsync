@@ -11,7 +11,7 @@ sub convert_pattern_to_regex {
 
   # handle leading /
   if (substr($pattern, 0, 1) eq "/") {
-    $regex = "\\A\.\/";
+    $regex = "\\A";
     $pattern = substr $pattern, 1;
   } else {
     $regex = "\/";
