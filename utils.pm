@@ -1,9 +1,9 @@
 package utils;
 
-use Desktop::Notify;
-
 use parent 'Exporter';
 our @EXPORT_OK = qw( convert_pattern_to_regex display_notification );
+
+use Desktop::Notify;
 
 sub convert_pattern_to_regex {
   my $pattern = shift;
