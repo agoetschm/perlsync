@@ -19,7 +19,7 @@ use Net::SFTP::Foreign;
 $| = 1; # autoflush
 
 use lib ".";
-use utils qw( convert_pattern_to_regex display_notification );
+use utils qw( convert_pattern_to_regex display_notification update_notification );
 
 my $host = "192.168.1.158";
 my $user = "pi";
@@ -85,14 +85,15 @@ sub sync {
     }
   };
 
-  say "Scanning files in $src...";
+  display_notification "Scanning files in $src...";
   find($wanted, $src);
-  say "Found " . scalar @content . " files to back up";
+  update_notification "Found " . scalar @content . " files to back up";
 
   my $sftp = Net::SFTP::Foreign->new(host => $host, user => $user);
   $sftp->error and error "Failed to connect to $host: " . $sftp->error;
   say "Connected to $host";
 
+  update_notification "Backup in progress...";
   for my $fname (@content) {
     say "considering $fname...";
     my $src_path = File::Spec->rel2abs($fname, $src);
@@ -106,9 +107,7 @@ sub sync {
     say "copy $src_path to $host/$dest";
     $sftp->put($src_path, $dest) or error "Failed to copy $src_path to $host: " .$sftp->error;
   }
-
-  display_notification "Backup complete"
-
+  update_notification "Backup complete";
 }
 
 1;

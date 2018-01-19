@@ -1,7 +1,7 @@
 package utils;
 
 use parent 'Exporter';
-our @EXPORT_OK = qw( convert_pattern_to_regex display_notification );
+our @EXPORT_OK = qw( convert_pattern_to_regex display_notification update_notification );
 
 use Desktop::Notify;
 
@@ -37,14 +37,23 @@ sub convert_pattern_to_regex {
   return qr/$regex/;
 }
 
+my $notification;
 sub display_notification {
   my $msg = shift;
   my $notify = Desktop::Notify->new();
-  my $notification = $notify->create(summary => 'Perlsync',
+  $notification = $notify->create(summary => 'Perlsync',
                                     body => $msg,
                                     timeout => 10000);
   $notification->show();
   # $notification->close();
+}
+
+sub update_notification {
+  die "No previous notification" unless $notification;
+
+  my $updated_msg = shift;
+  $notification->body($updated_msg);
+  $notification->show();
 }
 
 1;
