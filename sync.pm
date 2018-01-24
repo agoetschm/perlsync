@@ -94,7 +94,6 @@ sub sync {
 
   update_notification "Backup in progress...";
   for my $fname (@content) {
-    say "considering $fname...";
     my $src_path = File::Spec->rel2abs($fname, $src);
     my $dest = $backup_dir . "/" . $fname;
     my $destdir = dirname($dest);

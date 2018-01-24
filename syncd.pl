@@ -77,9 +77,9 @@ sub run {
 		}
 
 		while (1) {
-			say "Start sync at " . time();
+			say "Start sync at " . localtime();
       sync(%settings);
-      say "Done sync at " . time();
+      say "Done sync at " . localtime();
       sleep $interval;
 		}
 	} else {
