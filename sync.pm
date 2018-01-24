@@ -15,16 +15,8 @@ use File::Find;
 use Time::localtime;
 use Net::SFTP::Foreign;
 
-# TODO remove
-$| = 1; # autoflush
-
 use lib ".";
 use utils qw( convert_pattern_to_regex display_notification update_notification );
-
-my $host = "192.168.1.158";
-my $user = "pi";
-my $src = "/home/agoetschm/Documents";
-my $backup_dir = "backup";
 
 sub error {
   my $msg = shift;
@@ -72,6 +64,13 @@ sub test_filename {
 }
 
 sub sync {
+  my %settings = @_;
+  my $host = $settings{"host"};
+  my $user = $settings{"user"};
+  my $password = $settings{"password"};
+  my $src = $settings{"source"};
+  my $backup_dir = $settings{"destination"};
+
   read_syncinclude();
 
   my @content;
@@ -89,7 +88,7 @@ sub sync {
   find($wanted, $src);
   update_notification "Found " . scalar @content . " files to back up";
 
-  my $sftp = Net::SFTP::Foreign->new(host => $host, user => $user);
+  my $sftp = Net::SFTP::Foreign->new(host => $host, user => $user, password => $password);
   $sftp->error and error "Failed to connect to $host: " . $sftp->error;
   say "Connected to $host";
 

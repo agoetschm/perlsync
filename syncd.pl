@@ -10,14 +10,19 @@ use File::Spec::Functions;
 
 use lib ".";
 use sync qw( sync );
+use utils qw( read_settings );
 
+my %settings = read_settings();
+
+my $interval = $settings{"interval"} * 60;
+my $log_file = $settings{"logfile"};
 
 my $pf = catfile(getcwd(), 'pidfile.pid');
 my $daemon = Proc::Daemon->new(
 	pid_file     => $pf,
 	work_dir     => getcwd(),
-  child_STDOUT => "log.txt",
-  child_STDERR => "log.txt"
+  child_STDOUT => ">$log_file",
+  child_STDERR => ">$log_file"
 );
 
 my $pid = $daemon->Status($pf);
@@ -72,12 +77,10 @@ sub run {
 		}
 
 		while (1) {
-      # open(my $FH, '>>', catfile(getcwd(), "log.txt"));
 			say "Start sync at " . time();
-      sync();
-      say "Donc sync at " . time();
-			# close $FH;
-      sleep 30;
+      sync(%settings);
+      say "Done sync at " . time();
+      sleep $interval;
 		}
 	} else {
 		say "Already running with pid $pid";

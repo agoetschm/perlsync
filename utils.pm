@@ -1,9 +1,10 @@
 package utils;
 
 use parent 'Exporter';
-our @EXPORT_OK = qw( convert_pattern_to_regex display_notification update_notification );
+our @EXPORT_OK = qw( convert_pattern_to_regex display_notification update_notification read_settings );
 
 use Desktop::Notify;
+use Config::Simple;
 
 sub convert_pattern_to_regex {
   my $pattern = shift;
@@ -54,6 +55,12 @@ sub update_notification {
   my $updated_msg = shift;
   $notification->body($updated_msg);
   $notification->show();
+}
+
+sub read_settings {
+  my %settings;
+  Config::Simple->import_from('sync.conf', \%settings);
+  return %settings;
 }
 
 1;
