@@ -43,6 +43,8 @@ GetOptions(
 usage() if (@ARGV);
 exit(0);
 
+my $last_sync_time = 0;
+
 sub usage {
     say "Usage: syncd.pl [--start|--stop|--status|--restart]";
     exit(0);
@@ -77,10 +79,13 @@ sub run {
 		}
 
 		while (1) {
-			say "Start sync at " . localtime();
-      sync(%settings);
-      say "Done sync at " . localtime();
-      sleep $interval;
+      if (time() - $last_sync_time > $interval){
+  			say "Start sync at " . localtime();
+        sync(%settings);
+        $last_sync_time = time();
+        say "Done sync at " . localtime();
+      }
+      sleep 30;
 		}
 	} else {
 		say "Already running with pid $pid";
