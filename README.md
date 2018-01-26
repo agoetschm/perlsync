@@ -1,6 +1,13 @@
 # PerlSync
 A small Perl backup script to save local files on my Raspberry Pi. Also my first Perl project.
 
+## Install
+Not sure if that was the right way to do it... but I think the following works to install the required dependencies:
+```
+perl Makefile.PL
+make installdeps
+```
+
 ## Settings
 The `.syncinclude` file contains the files you want to back up in a `.gitignore`-like syntax.
 
