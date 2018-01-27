@@ -8,7 +8,7 @@ perl Makefile.PL
 make installdeps
 ```
 
-To use it as a service and start it automatically, you can add a systemd unit file called `/usr/lib/systemd/system/perlsync.service` and looking like:
+To use it as a service and start it automatically, you can add a user systemd unit file called `~/.config/systemd/user/perlsync.service` and looking like:
 ```
 [Unit]
 Description=Perlsync
@@ -16,13 +16,13 @@ Description=Perlsync
 [Service]
 WorkingDirectory=/opt/perlsync/
 Type=forking
-ExecStart=/bin/perl /opt/perlsync/syncd.pl --start
+ExecStart=/opt/perlsync/syncd.pl --start
 KillMode=process
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
-To enable the service you can run `systemctl enable perlsync.service`.
+To enable the service you can run `systemctl --user enable perlsync.service`.
 
 ## Settings
 The `.syncinclude` file contains the files you want to back up in a `.gitignore`-like syntax (but relative to the `source` folder).

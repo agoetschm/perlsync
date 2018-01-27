@@ -22,8 +22,8 @@ my $log_file = $settings{"logfile"};
 
 my $pf = catfile(getcwd(), 'pidfile.pid');
 my $daemon = Proc::Daemon->new(
-	pid_file     => $pf,
-	work_dir     => getcwd(),
+  pid_file     => $pf,
+  work_dir     => getcwd(),
   child_STDOUT => ">$log_file",
   child_STDERR => ">$log_file"
 );
@@ -66,34 +66,34 @@ sub stop {
 }
 
 sub status {
-	if ($pid) {
-		say "Running with pid $pid";
-	} else {
-		say "Not running";
-	}
+  if ($pid) {
+    say "Running with pid $pid";
+  } else {
+    say "Not running";
+  }
 }
 
 sub run {
-	if (!$pid) {
-		say "Starting...";
-		if ($daemonize) {
-			$daemon->Init;
-		}
-    
+  if (!$pid) {
+    say "Starting...";
+    if ($daemonize) {
+      $daemon->Init;
+    }
+
     my $last_sync_time = 0;
 
-		while (1) {
+    while (1) {
       if (time() - $last_sync_time > $interval){
-  			say "Start sync at " . localtime();
+        say "Start sync at " . localtime();
         sync(%settings);
         $last_sync_time = time();
         say "Done sync at " . localtime();
       }
       sleep 30;
-		}
-	} else {
-		say "Already running with pid $pid";
-	}
+    }
+  } else {
+    say "Already running with pid $pid";
+  }
 }
 
 sub restart {
