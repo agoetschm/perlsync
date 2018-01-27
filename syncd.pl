@@ -46,7 +46,6 @@ GetOptions(
 usage() if (@ARGV);
 exit(0);
 
-my $last_sync_time = 0;
 
 sub usage {
     say "Usage: syncd.pl [--start|--stop|--status|--restart]";
@@ -80,6 +79,8 @@ sub run {
 		if ($daemonize) {
 			$daemon->Init;
 		}
+    
+    my $last_sync_time = 0;
 
 		while (1) {
       if (time() - $last_sync_time > $interval){
