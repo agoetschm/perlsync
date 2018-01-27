@@ -8,9 +8,12 @@ use Proc::Daemon;
 use Cwd;
 use File::Spec::Functions;
 
-use lib ".";
+use FindBin;
+use lib $FindBin::Bin;
 use sync qw( sync );
 use utils qw( read_settings );
+
+chdir $FindBin::Bin;
 
 my %settings = read_settings();
 

@@ -6,7 +6,6 @@ version         '0.0.1';
 include         'Module::AutoInstall';
 
 # Specific dependencies
-requires       'File::Copy'             => 0;
 requires       'Proc::Daemon'           => 0;
 requires       'File::Copy'             => 0;
 requires       'File::Path'             => 0;
@@ -20,6 +19,7 @@ requires       'Cwd'                    => 0;
 requires       'File::Spec::Functions'  => 0;
 requires       'Desktop::Notify'        => 0;
 requires       'Config::Simple'         => 0;
+requires       'FindBin'         => 0;
 
 auto_install(
     make_args   => '--hello',   # option(s) for CPAN::Config
