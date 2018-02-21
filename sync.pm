@@ -93,7 +93,10 @@ sub sync {
   say "Connected to $host";
 
   update_notification "Backup in progress...";
+  my $counter = 0;
+  my $total = scalar @content;
   for my $fname (@content) {
+    $counter += 1;
     my $src_path = File::Spec->rel2abs($fname, $src);
     my $dest = $backup_dir . "/" . $fname;
     my $destdir = dirname($dest);
@@ -102,8 +105,8 @@ sub sync {
     my $dest_stat;
     next if $dest_stat = $sftp->stat($dest) and $dest_stat->mtime >= stat($src_path)->mtime;
 
-    say "copy $src_path to $host/$dest";
-    $sftp->put($src_path, $dest) or error "Failed to copy $src_path to $host: " .$sftp->error;
+    say "[$counter/$total] backup $fname"; # copy $src_path to $host/$dest
+    $sftp->put($src_path, $dest, copy_time => 0, copy_perm => 0) or error "Failed to copy $src_path to $host: " .$sftp->error;
   }
   update_notification "Backup complete";
 }

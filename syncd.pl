@@ -87,6 +87,9 @@ sub run {
       if (time() - $last_sync_time > $interval){
         say "Start sync at " . localtime();
         eval{ sync(%settings) };
+        if ($@) {
+            warn $@;
+        }
         $last_sync_time = time();
         say "Done sync at " . localtime();
       }
