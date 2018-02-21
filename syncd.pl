@@ -19,13 +19,14 @@ my %settings = read_settings();
 
 my $interval = $settings{"interval"} * 60;
 my $log_file = $settings{"logfile"};
+my $err_file = $settings{"errfile"};
 
 my $pf = catfile(getcwd(), 'pidfile.pid');
 my $daemon = Proc::Daemon->new(
   pid_file     => $pf,
   work_dir     => getcwd(),
   child_STDOUT => ">$log_file",
-  child_STDERR => ">$log_file"
+  child_STDERR => ">$err_file"
 );
 
 my $pid = $daemon->Status($pf);
@@ -85,7 +86,7 @@ sub run {
     while (1) {
       if (time() - $last_sync_time > $interval){
         say "Start sync at " . localtime();
-        sync(%settings);
+        eval{ sync(%settings) };
         $last_sync_time = time();
         say "Done sync at " . localtime();
       }
