@@ -93,6 +93,7 @@ sub run {
         $last_sync_time = time();
         say "Done sync at " . localtime();
       }
+      select()->flush();
       sleep 30;
     }
   } else {
