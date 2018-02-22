@@ -103,6 +103,8 @@ sub sync {
     my $dest = $backup_dir . "/" . $fname;
     my $destdir = dirname($dest);
 
+    select()->flush(); # flush stdout, otherwise log file isn't informative enough
+
     if (time() - $last_notif_time > 60) {
       update_notification "Backup in progress... [$counter/$total]";
       $last_notif_time = time();
